@@ -1,7 +1,7 @@
-import { test } from 'vitest';
+import { test, vi } from 'vitest';
 import assert from 'node:assert/strict';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createPatient } from '@test/fixtures/patients';
 import { createQueryClient } from '@/tests/test-utils';
@@ -9,6 +9,74 @@ import type { Patient } from '@shared/patient-schema';
 import { PatientsPage } from '@/pages/patients-page';
 
 const patient = createPatient();
+
+test('search waits for a typing pause, while clearing and filtering apply immediately', async () => {
+  const requests: URLSearchParams[] = [];
+  globalThis.fetch = async (url) => {
+    const parsed = new URL(String(url), 'http://localhost');
+    if (parsed.pathname === '/api/patients/metadata') {
+      return Response.json({
+        counts: { All: 1, Active: 1, Churned: 0, Inquiry: 0, Onboarding: 0 },
+        cities: ['Boston'],
+      });
+    }
+    requests.push(parsed.searchParams);
+    return Response.json({
+      data: [patient],
+      pagination: { page: 1, pageSize: 20, total: 1 },
+    });
+  };
+
+  const queryClient = createQueryClient();
+  const ui = render(
+    <QueryClientProvider client={queryClient}>
+      <PatientsPage />
+    </QueryClientProvider>,
+  );
+  await ui.findByRole('button', { name: 'Avery Rose Bennett' });
+  const input = ui.getByLabelText('Search patients by name') as HTMLInputElement;
+
+  vi.useFakeTimers();
+  try {
+    fireEvent.change(input, { target: { value: 'ave' } });
+    assert.equal(input.value, 'ave');
+    await act(() => vi.advanceTimersByTimeAsync(200));
+    fireEvent.change(input, { target: { value: 'avery' } });
+    await act(() => vi.advanceTimersByTimeAsync(299));
+    assert.equal(requests.length, 1);
+    assert.equal(new URLSearchParams(window.location.search).get('q'), null);
+    await act(() => vi.advanceTimersByTimeAsync(1));
+    assert.equal(requests.length, 2);
+    assert.equal(requests.at(-1)!.get('q'), 'avery');
+    assert.equal(new URLSearchParams(window.location.search).get('q'), 'avery');
+
+    fireEvent.change(input, { target: { value: 'avery b' } });
+    fireEvent.click(ui.getByRole('button', { name: /^Active/ }));
+    assert.equal(requests.at(-1)!.get('q'), 'avery');
+    assert.equal(requests.at(-1)!.get('status'), 'Active');
+    const afterFilter = requests.length;
+    await act(() => vi.advanceTimersByTimeAsync(300));
+    assert.equal(requests.length, afterFilter + 1);
+    assert.equal(requests.at(-1)!.get('q'), 'avery b');
+    assert.equal(requests.at(-1)!.get('status'), 'Active');
+
+    fireEvent.change(input, { target: { value: 'pending' } });
+    fireEvent.click(ui.getByRole('button', { name: 'Clear search' }));
+    assert.equal(input.value, '');
+    assert.equal(requests.at(-1)!.get('q'), null);
+    const afterClear = requests.length;
+    await act(() => vi.advanceTimersByTimeAsync(300));
+    assert.equal(requests.length, afterClear);
+
+    fireEvent.change(input, { target: { value: 'unmounted' } });
+    ui.unmount();
+    await act(() => vi.advanceTimersByTimeAsync(300));
+    assert.equal(requests.length, afterClear);
+  } finally {
+    vi.useRealTimers();
+    queryClient.clear();
+  }
+});
 
 test('roster search, status filtering, details and dirty-close confirmation work together', async () => {
   window.history.replaceState(null, '', '/');
@@ -61,7 +129,9 @@ test('roster search, status filtering, details and dirty-close confirmation work
 
   await ui.findByRole('button', { name: 'Avery Rose Bennett' });
   await user.type(ui.getByLabelText('Search patients by name'), 'avery bennett');
-  await waitFor(() => assert.equal(ui.queryByRole('button', { name: 'Noah Bennett' }), null));
+  await waitFor(() =>
+    assert.equal(ui.queryByRole('button', { name: 'Noah Bennett' }) === null, true),
+  );
   await waitFor(() => assert.equal(requests.at(-1)!.get('q'), 'avery bennett'));
   assert.ok(ui.getByRole('button', { name: 'Avery Rose Bennett' }));
   await user.click(ui.getByRole('button', { name: /Churned/ }));

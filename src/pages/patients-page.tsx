@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useDebounce } from 'react-use';
 import {
   CheckCircle2,
   ChevronRight,
@@ -47,17 +48,31 @@ export function PatientsPage() {
   const panelOpener = useRef<HTMLButtonElement>(null);
 
   const [listQuery, setListQuery] = useState(initialQuery);
+  const [search, setSearchInput] = useState(listQuery.q);
   const query = usePatients(listQuery);
   const metadata = usePatientMetadata();
-  const search = listQuery.q;
   const filter: Filter = listQuery.status || 'All';
 
   function updateQuery(change: Partial<PatientListQuery>) {
     setListQuery((previous) => ({ ...previous, ...change, page: change.page ?? 1 }));
   }
 
+  useDebounce(
+    () => {
+      if (search !== listQuery.q) {
+        updateQuery({ q: search });
+      }
+    },
+    300,
+    [search],
+  );
+
   function setSearch(q: string) {
-    updateQuery({ q });
+    setSearchInput(q);
+
+    if (!q) {
+      updateQuery({ q });
+    }
   }
 
   function setFilter(status: Filter) {
@@ -74,7 +89,7 @@ export function PatientsPage() {
   const counts = metadata.data?.counts;
   const total = query.data?.pagination.total ?? 0;
   const totalPages = query.data ? Math.ceil(total / query.data.pagination.pageSize) : 0;
-  const hasFilters = Boolean(search || listQuery.status || listQuery.city);
+  const hasFilters = Boolean(listQuery.q || listQuery.status || listQuery.city);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -393,6 +408,7 @@ export function PatientsPage() {
                       <Button
                         variant="outline"
                         onClick={() => {
+                          setSearchInput('');
                           updateQuery({ q: '', status: undefined, city: undefined });
                         }}
                       >
