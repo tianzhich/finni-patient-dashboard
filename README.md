@@ -2,6 +2,8 @@
 
 A patient dashboard for a single independent practice, built with React, Express, and SQLite.
 
+This is an independent demo, not an official Finni Health product. The Finni Health name and logo belong to their respective owner.
+
 ## Features
 
 - Add, view, and edit patient records.

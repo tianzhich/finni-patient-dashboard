@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  Activity,
   CheckCircle2,
   ChevronRight,
   FileHeart,
@@ -158,15 +157,16 @@ export function PatientsPage() {
       <header className="flex h-16 items-center gap-3 border-b border-border bg-surface px-4 sm:gap-4 sm:px-6 md:h-20 md:gap-6 md:px-8">
         <a
           href="/"
-          className="flex items-center gap-2 text-2xl font-bold tracking-tight sm:gap-2.5 sm:text-3xl"
-          aria-label="Practice workspace home"
+          className="flex shrink-0 items-center rounded-sm"
+          aria-label="Finni Health patient workspace home"
         >
-          <span className="grid size-8 place-items-center rounded-xl bg-action-bg text-action-fg sm:size-9">
-            <Activity className="size-5" />
-          </span>
-          <span>
-            practice<span className="text-brand-orange">.</span>
-          </span>
+          <img
+            src="/finni-logo.svg"
+            alt="Finni Health"
+            width="86"
+            height="32"
+            className="h-6 w-auto sm:h-7"
+          />
         </a>
         <span className="hidden h-6 w-px bg-border sm:block" />
         <span className="hidden text-sm text-secondary lg:inline">Patient workspace</span>
