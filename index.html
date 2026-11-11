@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <meta name="theme-color" content="#fbf7f0" />
+    <script>
+      (() => {
+        let preference = 'system';
+
+        try {
+          const stored = localStorage.getItem('finni-patient-dashboard:theme');
+
+          if (stored === 'light' || stored === 'dark') preference = stored;
+        } catch {
+          // Follow the system preference when storage is unavailable.
+        }
+
+        const dark =
+          preference === 'dark' ||
+          (preference === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        document.querySelector('meta[name="theme-color"]').content = dark ? '#11151c' : '#fbf7f0';
+      })();
+    </script>
+    <meta name="description" content="A focused patient roster for independent care practices." />
+    <title>Patients · Practice workspace</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
