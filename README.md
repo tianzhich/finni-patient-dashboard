@@ -89,34 +89,9 @@ npm test
 npm run build
 ```
 
-Frontend tests use **Vitest**, React Testing Library, and user-event. Vitest reuses the Vite configuration; DOM assertions use `@testing-library/jest-dom` (this does not install or require the Jest runner). Backend and shared-schema tests retain Node's built-in test runner.
+Tests cover frontend interactions, API behavior, SQLite persistence, and shared validation. Browser end-to-end tests are not included.
 
-Frontend tests are organized by scope:
-
-| Level                  | Location                 | Responsibility                                                                                                                                   |
-| ---------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Unit / client boundary | `src/tests/unit/`        | Query encoding, cancellation signal forwarding, response contracts, and HTTP/network errors. Runs in Node.                                       |
-| Component              | `src/tests/components/`  | Form validation, submitted values, and save failures. Runs in jsdom.                                                                             |
-| Page integration       | `src/tests/integration/` | Real page, forms, dialogs, and query cache working together: filters, URL state, pagination, save refresh, and focus restoration. Runs in jsdom. |
-
-UI tests mock fetch and keep React, form validation, and TanStack Query real. Server tests verify actual API behavior, SQLite persistence, and static hosting. Shared-schema tests verify validation rules. Cross-layer fictional data factories live in `tests/fixtures/patients.ts`; each call returns fresh nested objects. Scenario-specific edge cases stay with their tests.
-
-Detailed validation case matrices live in `shared/tests/`. Other suites keep representative integration checks: HTTP error mapping, client response-validation wiring, and form feedback/request blocking. They do not repeat the shared schema's field and parameter matrices.
-
-The approach follows [Testing Library's user-oriented principles](https://testing-library.com/docs/guiding-principles/): query controls by role or label, prefer user-event for interactions, await observable outcomes, and clean up between tests. Test at the smallest scope that gives useful confidence; page tests cover interactions between components. Business components already exercised clearly through the page do not each require separate tests. Focused form tests isolate substantial validation and save-error behavior. Browser E2E tests are not included; jsdom tests do not verify layout or a complete browser-to-database workflow.
-
-| Command                           | Scope                                     |
-| --------------------------------- | ----------------------------------------- |
-| `npm test`                        | Frontend, backend, and shared validation. |
-| `npm run test:client`             | All frontend tests.                       |
-| `npm run test:client:unit`        | Client unit/boundary tests.               |
-| `npm run test:client:components`  | Component tests.                          |
-| `npm run test:client:integration` | Page integration tests.                   |
-| `npm run test:client:watch`       | Frontend watch mode.                      |
-| `npm run test:server`             | API and persistence.                      |
-| `npm run test:shared`             | Shared validation.                        |
-
-Use `npm run lint:fix` and `npm run format` to apply automatic fixes.
+Run `npm run test:client`, `npm run test:server`, or `npm run test:shared` to test each area separately.
 
 [GitHub Actions](.github/workflows/checks.yml) runs these checks on pushes and pull requests using Node.js 24.
 
