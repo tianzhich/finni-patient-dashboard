@@ -239,14 +239,14 @@ export function PatientsPage() {
           </div>
           <section aria-label="Patient roster">
             <div
-              className="mb-5 flex flex-wrap gap-2 md:flex-nowrap md:gap-6 md:overflow-auto md:border-b md:border-border"
+              className="mb-5 flex flex-wrap gap-2 md:flex-nowrap md:gap-6 md:overflow-x-auto md:overflow-y-hidden md:border-b md:border-border"
               aria-label="Filter patients by status"
             >
               {(['All', ...STATUSES] as const).map((s) => (
                 <button
                   key={s}
                   className={cn(
-                    'group flex min-h-11 items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium whitespace-nowrap text-secondary md:-mb-px md:min-h-12 md:rounded-none md:border-0 md:border-b-2 md:border-transparent md:bg-transparent md:px-0.5 md:pt-0 md:pb-3.5 md:text-base',
+                    'group flex min-h-11 items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium whitespace-nowrap text-secondary md:min-h-12 md:shrink-0 md:rounded-none md:border-0 md:border-b-2 md:border-transparent md:bg-transparent md:px-0.5 md:pt-0 md:pb-3.5 md:text-base',
                     'aria-pressed:border-accent aria-pressed:bg-accent-surface aria-pressed:font-semibold aria-pressed:text-accent md:aria-pressed:bg-transparent',
                   )}
                   onClick={() => setFilter(s)}
