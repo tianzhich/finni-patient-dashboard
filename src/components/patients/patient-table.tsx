@@ -29,7 +29,7 @@ export function PatientTable({
 }) {
   return (
     <div
-      className="overflow-visible focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-accent sm:overflow-x-auto"
+      className="relative overflow-visible focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-accent sm:overflow-x-auto"
       role="region"
       aria-label="Patient records"
       aria-busy={loading}
