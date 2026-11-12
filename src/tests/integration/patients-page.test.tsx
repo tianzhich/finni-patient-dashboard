@@ -267,7 +267,7 @@ test('pagination, sorting and city filtering request server results and preserve
   await user.click(ui.getByRole('button', { name: 'Next' }));
   await ui.findByText('Page 3 of 4');
   assert.equal(requests.at(-1)!.get('page'), '3');
-  assert.equal(ui.queryByLabelText('Sort patients'), null);
+  assert.equal((ui.getByLabelText('Sort patients') as HTMLSelectElement).value, 'dateOfBirth');
   await user.click(ui.getByRole('button', { name: 'Sort by patient name' }));
   await waitFor(() => assert.equal(requests.at(-1)!.get('sortOrder'), 'asc'));
   await user.click(ui.getByRole('button', { name: 'Sort by patient name' }));
@@ -325,6 +325,46 @@ test('pagination, sorting and city filtering request server results and preserve
   assert.equal((ui.getByRole('button', { name: 'Previous' }) as HTMLButtonElement).disabled, true);
 
   assert.equal(metadataRequests, 1);
+});
+
+test('mobile sorting controls update server sorting, reset the page and preserve URL state', async () => {
+  window.history.replaceState(null, '', '/?page=2&pageSize=10');
+  const requests: URLSearchParams[] = [];
+  const user = userEvent.setup();
+
+  globalThis.fetch = async (url) => {
+    const parsed = new URL(String(url), 'http://localhost');
+    if (parsed.pathname === '/api/patients/metadata') {
+      return Response.json({
+        counts: { All: 35, Inquiry: 0, Onboarding: 0, Active: 35, Churned: 0 },
+        cities: ['Austin'],
+      });
+    }
+    requests.push(parsed.searchParams);
+    return Response.json({
+      data: [patient],
+      pagination: { page: Number(parsed.searchParams.get('page')), pageSize: 10, total: 35 },
+    });
+  };
+
+  const ui = render(
+    <QueryClientProvider client={createQueryClient()}>
+      <PatientsPage />
+    </QueryClientProvider>,
+  );
+  await ui.findByRole('button', { name: 'Avery Rose Bennett' });
+  await user.selectOptions(ui.getByLabelText('Sort patients'), 'createdAt');
+  await waitFor(() => assert.equal(requests.at(-1)!.get('sortBy'), 'createdAt'));
+  assert.equal(requests.at(-1)!.get('sortOrder'), 'desc');
+  assert.equal(requests.at(-1)!.get('page'), '1');
+
+  await user.click(ui.getByRole('button', { name: 'Sort ascending' }));
+  await waitFor(() => assert.equal(requests.at(-1)!.get('sortOrder'), 'asc'));
+  assert.equal(new URLSearchParams(window.location.search).get('sortOrder'), 'asc');
+  assert.equal(
+    ui.getByRole('button', { name: 'Sort by date added' }).closest('th')!.getAttribute('aria-sort'),
+    'ascending',
+  );
 });
 
 test('an out-of-range URL page is corrected after the server returns the total', async () => {

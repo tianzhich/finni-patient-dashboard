@@ -40,6 +40,40 @@ export function PatientTable({
           Updating patients…
         </span>
       )}
+      <div className="flex items-end gap-3 border-y border-border bg-surface-subtle px-5 py-4 sm:hidden">
+        <label className="flex min-w-0 flex-1 flex-col gap-1.5 text-xs font-medium text-secondary">
+          Sort by
+          <select
+            aria-label="Sort patients"
+            className="min-h-11 w-full min-w-0 rounded-md border border-border bg-surface px-3 text-sm text-primary"
+            value={sortBy}
+            onChange={(event) => onSort(event.target.value as PatientListQuery['sortBy'])}
+          >
+            <option value="name">Patient name</option>
+            <option value="dateOfBirth">Date of birth</option>
+            <option value="createdAt">Date added</option>
+          </select>
+        </label>
+        <button
+          type="button"
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md border border-border bg-surface px-3 text-sm font-medium text-primary hover:bg-surface-hover"
+          aria-label={sortOrder === 'asc' ? 'Sort descending' : 'Sort ascending'}
+          onClick={() => onSort(sortBy)}
+        >
+          {sortOrder === 'asc' ? (
+            <ArrowUp className="size-4" aria-hidden="true" />
+          ) : (
+            <ArrowDown className="size-4" aria-hidden="true" />
+          )}
+          {sortBy === 'name'
+            ? sortOrder === 'asc'
+              ? 'A–Z'
+              : 'Z–A'
+            : sortOrder === 'asc'
+              ? 'Oldest first'
+              : 'Newest first'}
+        </button>
+      </div>
       <table
         className="block w-full min-w-0 border-collapse text-left whitespace-normal sm:table sm:min-w-4xl sm:whitespace-nowrap"
         role="table"
@@ -50,10 +84,10 @@ export function PatientTable({
           {sortOrder === 'asc' ? 'ascending' : 'descending'}
         </caption>
         <thead
-          className="block bg-surface-subtle text-secondary sm:table-header-group"
+          className="hidden bg-surface-subtle text-secondary sm:table-header-group"
           role="rowgroup"
         >
-          <tr className="grid grid-cols-2 sm:table-row" role="row">
+          <tr role="row">
             <th
               className={cn(headerStyles, 'sm:w-1/4')}
               scope="col"
@@ -113,7 +147,7 @@ export function PatientTable({
               </button>
             </th>
             <th
-              className={cn(headerStyles, 'col-span-full')}
+              className={headerStyles}
               scope="col"
               aria-sort={
                 sortBy === 'createdAt' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'
@@ -140,13 +174,13 @@ export function PatientTable({
                 )}
               </button>
             </th>
-            <th className={cn(headerStyles, 'hidden sm:table-cell')} scope="col">
+            <th className={headerStyles} scope="col">
               Status
             </th>
-            <th className={cn(headerStyles, 'hidden sm:table-cell')} scope="col">
+            <th className={headerStyles} scope="col">
               Location
             </th>
-            <th className={cn(headerStyles, 'hidden sm:table-cell')} scope="col">
+            <th className={headerStyles} scope="col">
               <span className="sr-only">Actions</span>
             </th>
           </tr>
@@ -157,42 +191,41 @@ export function PatientTable({
         >
           {patients.map((p) => (
             <tr
-              className="group grid grid-cols-2 items-start gap-x-4 gap-y-5 border-t border-border py-6 sm:table-row sm:border-0 sm:py-0 sm:hover:bg-surface-hover"
+              className="group grid grid-cols-2 items-start gap-x-4 gap-y-5 border-b border-border py-5 last:border-b-0 sm:table-row sm:border-0 sm:py-0 sm:hover:bg-surface-hover"
               key={p.id}
               role="row"
             >
-              <td role="cell" className={cn(cellStyles, 'col-span-full')}>
-                <div className="flex items-start gap-3 sm:items-center">
+              <td
+                role="cell"
+                className={cn(cellStyles, 'col-span-full row-start-1 pr-14 sm:pr-4 lg:pr-6')}
+              >
+                <div className="flex items-center gap-3">
                   <span
-                    className="mt-0.5 grid size-10 shrink-0 place-items-center rounded-full border border-border bg-surface-inset text-xs font-semibold text-secondary sm:mt-0"
+                    className="grid size-10 shrink-0 place-items-center rounded-full border border-border bg-surface-inset text-xs font-semibold text-secondary"
                     aria-hidden="true"
                   >
                     {p.firstName.slice(0, 1)}
                     {p.lastName.slice(0, 1)}
                   </span>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <button
-                      className="flex min-h-11 items-center border-0 bg-transparent p-0 text-left text-base leading-normal font-semibold wrap-anywhere text-primary hover:underline sm:block sm:min-h-0 sm:max-w-xs sm:whitespace-normal"
+                      className="block border-0 bg-transparent p-0 text-left text-base leading-snug font-semibold wrap-anywhere text-primary hover:underline sm:max-w-xs sm:leading-normal sm:whitespace-normal"
                       onClick={(event) => onView(p, event.currentTarget)}
                     >
                       {fullName(p)}
                     </button>
-                    <span className="block text-xs tracking-wide text-secondary tabular-nums sm:mt-1">
+                    <span className="mt-1 block text-xs tracking-wide text-secondary tabular-nums">
                       ID · {p.id.slice(0, 8).toUpperCase()}
                     </span>
                   </div>
                 </div>
               </td>
               <td role="cell" className={cn(cellStyles, 'text-base text-primary tabular-nums')}>
-                <span className={mobileLabelStyles} aria-hidden="true">
-                  Date of birth
-                </span>
+                <span className={mobileLabelStyles}>Date of birth</span>
                 {formatDate(p.dateOfBirth)}
               </td>
               <td role="cell" className={cn(cellStyles, 'text-base text-primary tabular-nums')}>
-                <span className={mobileLabelStyles} aria-hidden="true">
-                  Date added
-                </span>
+                <span className={mobileLabelStyles}>Date added</span>
                 <time dateTime={p.createdAt} title={new Date(p.createdAt).toLocaleString('en-US')}>
                   {new Date(p.createdAt).toLocaleDateString('en-US', {
                     month: 'short',
@@ -202,27 +235,28 @@ export function PatientTable({
                 </time>
               </td>
               <td role="cell" className={cellStyles}>
-                <span className={mobileLabelStyles} aria-hidden="true">
-                  Status
-                </span>
+                <span className={mobileLabelStyles}>Status</span>
                 <StatusBadge status={p.status} />
               </td>
               <td role="cell" className={cn(cellStyles, 'text-base wrap-anywhere text-primary')}>
-                <span className={mobileLabelStyles} aria-hidden="true">
-                  Location
-                </span>
+                <span className={mobileLabelStyles}>Location</span>
                 {p.address.city}
                 <span className="mt-1 block text-sm text-secondary sm:mt-1">
                   {p.address.state} · {p.address.postalCode}
                 </span>
               </td>
-              <td role="cell" className={cn(cellStyles, 'self-end justify-self-end')}>
+              <td
+                role="cell"
+                className={cn(cellStyles, 'col-start-2 row-start-1 self-center justify-self-end')}
+              >
                 <button
-                  className="inline-flex h-11 min-h-11 items-center gap-1 rounded-lg border border-accent-border bg-transparent px-2.5 text-sm font-semibold text-accent hover:bg-surface-hover sm:gap-1.5 sm:rounded-md sm:border-transparent"
+                  className="inline-flex size-11 items-center justify-center rounded-md border-0 bg-transparent text-sm font-semibold text-accent hover:bg-surface-hover sm:w-auto sm:gap-1.5 sm:px-2.5"
                   aria-label={`View ${fullName(p)}`}
+                  title="View record"
                   onClick={(event) => onView(p, event.currentTarget)}
                 >
-                  View<span className="sm:hidden"> record</span> <ArrowRight className="size-4" />
+                  <span className="hidden sm:inline">View</span>
+                  <ArrowRight className="size-5 sm:size-4" aria-hidden="true" />
                 </button>
               </td>
             </tr>

@@ -424,20 +424,21 @@ export function PatientsPage() {
                 )
               )}
               {query.data && !query.isPlaceholderData && !query.isError && (
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3 text-sm text-secondary sm:px-6">
-                  <span role="status">
-                    Showing {patients.length ? (listQuery.page - 1) * listQuery.pageSize + 1 : 0}–
-                    {patients.length
-                      ? (listQuery.page - 1) * listQuery.pageSize + patients.length
-                      : 0}{' '}
-                    of {total} patients
-                  </span>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <label>
-                      Per page
+                <div className="flex flex-col gap-4 border-t border-border px-4 py-4 text-sm text-secondary sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3 sm:px-6 sm:py-3">
+                  <div className="flex items-center justify-between gap-3 sm:contents">
+                    <span className="text-xs sm:text-sm" role="status">
+                      Showing {patients.length ? (listQuery.page - 1) * listQuery.pageSize + 1 : 0}–
+                      {patients.length
+                        ? (listQuery.page - 1) * listQuery.pageSize + patients.length
+                        : 0}{' '}
+                      of {total} patients
+                    </span>
+                    <label className="flex shrink-0 items-center gap-2 text-xs sm:text-sm">
+                      <span className="sm:hidden">Rows</span>
+                      <span className="hidden sm:inline">Per page</span>
                       <select
                         aria-label="Patients per page"
-                        className="ml-2 min-h-11 rounded-md border border-border bg-surface px-2 text-primary"
+                        className="min-h-11 rounded-md border border-border bg-surface px-2 text-sm text-primary"
                         value={listQuery.pageSize}
                         onChange={(event) => updateQuery({ pageSize: Number(event.target.value) })}
                       >
@@ -450,24 +451,31 @@ export function PatientsPage() {
                           ))}
                       </select>
                     </label>
+                  </div>
+                  <nav
+                    aria-label="Patient pagination"
+                    className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:flex sm:gap-3"
+                  >
                     <Button
+                      className="min-w-0 px-2 text-sm sm:px-4 sm:text-base"
                       variant="outline"
                       disabled={listQuery.page <= 1 || query.isFetching}
                       onClick={() => updateQuery({ page: listQuery.page - 1 })}
                     >
                       Previous
                     </Button>
-                    <span>
+                    <span className="text-center text-xs whitespace-nowrap sm:text-sm">
                       Page {listQuery.page} of {Math.max(1, totalPages)}
                     </span>
                     <Button
+                      className="min-w-0 px-2 text-sm sm:px-4 sm:text-base"
                       variant="outline"
                       disabled={listQuery.page >= totalPages || query.isFetching}
                       onClick={() => updateQuery({ page: listQuery.page + 1 })}
                     >
                       Next
                     </Button>
-                  </div>
+                  </nav>
                 </div>
               )}
             </div>
